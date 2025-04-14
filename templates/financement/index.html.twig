@@ -1,0 +1,265 @@
+{% extends 'base.html.twig' %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Fonction pour masquer une question conditionnelle spécifique
+    const hideConditionalQuestion = (questionElement) => {
+        questionElement.classList.add('hidden');
+        questionElement.classList.remove('opacity-100');
+        questionElement.classList.add('opacity-0');
+        
+        // Désélectionner les inputs dans cette question masquée
+        questionElement.querySelectorAll('input').forEach(input => {
+            if (input.type === 'radio' || input.type === 'checkbox') {
+                if (input.checked) {
+                    input.checked = false;
+                    // Déclencher l'événement change pour masquer les sous-questions potentielles
+                    input.dispatchEvent(new Event('change'));
+                }
+            } else if (input.type === 'text') {
+                input.value = '';
+            }
+        });
+    };
+
+    // Masquer toutes les questions conditionnelles au démarrage
+    document.querySelectorAll('[data-conditional="true"]').forEach(question => {
+        hideConditionalQuestion(question);
+    });
+
+    // Événement de changement pour les inputs
+    document.querySelectorAll('.proposition-input').forEach(input => {
+        input.addEventListener('change', (event) => {
+            const propositionId = event.target.value;
+            
+            // Gérer les checkboxes et boutons radio
+            if (event.target.type === 'checkbox' || event.target.type === 'radio') {
+                // Trouver les questions conditionnelles déclenchées par cette proposition
+                const conditionalQuestions = document.querySelectorAll(
+                    `[data-proposition-trigger="${propositionId}"]`
+                );
+                
+                // Si cette proposition a des questions conditionnelles
+                if (conditionalQuestions.length > 0) {
+                    if (event.target.checked) {
+                        // Afficher les questions conditionnelles liées à cette proposition
+                        conditionalQuestions.forEach(conditionalQuestion => {
+                            conditionalQuestion.classList.remove('hidden');
+                            void conditionalQuestion.offsetWidth; // Force reflow pour l'animation
+                            conditionalQuestion.classList.remove('opacity-0');
+                            conditionalQuestion.classList.add('opacity-100');
+                        });
+                    } else {
+                        // Masquer les questions conditionnelles liées à cette proposition
+                        conditionalQuestions.forEach(conditionalQuestion => {
+                            hideConditionalQuestion(conditionalQuestion);
+                        });
+                    }
+                }
+                
+                // Si c'est un bouton radio, masquer les questions conditionnelles des autres options
+                if (event.target.type === 'radio' && event.target.checked) {
+                    // Trouver toutes les propositions du même groupe (même nom)
+                    const radioGroup = document.querySelectorAll(`input[name="${event.target.name}"]`);
+                    
+                    // Pour chaque option du groupe
+                    radioGroup.forEach(radio => {
+                        if (radio !== event.target) {
+                            // Masquer les questions conditionnelles de cette option
+                            const otherPropositionId = radio.value;
+                            const otherConditionalQuestions = document.querySelectorAll(
+                                `[data-proposition-trigger="${otherPropositionId}"]`
+                            );
+                            
+                            otherConditionalQuestions.forEach(question => {
+                                hideConditionalQuestion(question);
+                            });
+                        }
+                    });
+                }
+            }
+        });
+    });
+});
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="min-h-screen bg-gray-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <form method="post" class="space-y-8 bg-white rounded-lg shadow-sm">
+                <div class="p-6 space-y-8">
+                    {% for questionData in questions %}
+    {% if not questionData.question.questionCondition %}
+        <div class="mb-8 last:mb-0">
+            <div class="border-b border-gray-200 pb-4 mb-6">
+                <h3 class="text-2xl font-semibold text-gray-900">
+                    {{ questionData.question.NomQuestion }}
+                </h3>
+            </div>
+            
+            {% if questionData.question.type.id == 2 %}
+                {# Champ de saisie texte #}
+                <div class="w-full space-y-2">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="question_{{ questionData.question.id }}"
+                            name="question_{{ questionData.question.id }}"
+                            class="block w-full max-w-xs px-4 py-2 rounded-lg border-2 border-red-500 shadow-sm 
+                                    focus:ring-2 focus:ring-red-500 focus:border-red-500
+                                    placeholder-gray-400 transition-colors
+                                    text-lg bg-white"
+                            placeholder="Saisissez votre réponse ici..."
+                        >
+                    </div>
+                </div>
+            {% else %}
+                {# Questions à choix (radio/checkbox) #}
+                <div class="grid gap-4 lg:gap-6">
+                    {% for proposition in questionData.propositions %}
+                        <div class="relative">
+                            <div class="flex items-start group hover:bg-gray-50 p-4 rounded-lg transition-colors">
+                                <div class="flex items-center h-6">
+                                    {% if questionData.question.type.id == 1 %}
+                                        <input type="radio" 
+                                            id="prop_{{ proposition.id }}" 
+                                            name="question_{{ questionData.question.id }}" 
+                                            value="{{ proposition.id }}"
+                                            class="proposition-input h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                    {% elseif questionData.question.type.id == 3 %}
+                                        <input type="checkbox" 
+                                            id="prop_{{ proposition.id }}" 
+                                            name="question_{{ questionData.question.id }}[]" 
+                                            value="{{ proposition.id }}"
+                                            class="proposition-input h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                    {% endif %}
+                                </div>
+                                <label for="prop_{{ proposition.id }}" 
+                                    class="ml-4 text-lg text-gray-700 cursor-pointer flex-grow">
+                                    {{ proposition.libelle }}
+                                </label>
+                            </div>
+
+                            {% for conditionalQuestion in questions %}
+                                {% if conditionalQuestion.question.questionCondition 
+                                    and conditionalQuestion.question.questionCondition.id == proposition.id %}
+                                    <div class="mt-6 ml-8 p-6 bg-gray-50 rounded-lg border border-gray-200 transition-all duration-300 ease-in-out hidden opacity-0"
+                                            data-conditional="true"
+                                            data-proposition-trigger="{{ proposition.id }}">
+                                        <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                                            {{ conditionalQuestion.question.NomQuestion }}
+                                        </h4>
+                                        {% if conditionalQuestion.question.type.id == 2 %}
+                                            {# Champ de saisie pour question conditionnelle #}
+                                            <div class="w-full">
+                                                <input 
+                                                    type="text" 
+                                                    id="question_{{ conditionalQuestion.question.id }}"
+                                                    name="question_{{ conditionalQuestion.question.id }}"
+                                                    class="block w-full max-w-sm px-4 py-2 rounded-lg border-2 border-red-500 shadow-sm 
+                                                            focus:ring-2 focus:ring-red-500 focus:border-red-500
+                                                            placeholder-gray-400 transition-colors
+                                                            text-lg bg-white"
+                                                    placeholder="Saisissez votre réponse ici..."
+                                                >
+                                            </div>
+                                        {% else %}
+                                            <div class="space-y-4">
+                                                {% for conditionalProposition in conditionalQuestion.propositions %}
+                                                    <div class="flex items-center p-3 hover:bg-white rounded-md transition-colors">
+                                                        {% if conditionalQuestion.question.type.id == 1 %}
+                                                            <input type="radio" 
+                                                                id="prop_{{ conditionalProposition.id }}" 
+                                                                name="question_{{ conditionalQuestion.question.id }}" 
+                                                                value="{{ conditionalProposition.id }}"
+                                                                class="proposition-input h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                                        {% elseif conditionalQuestion.question.type.id == 3 %}
+                                                            <input type="checkbox" 
+                                                                id="prop_{{ conditionalProposition.id }}" 
+                                                                name="question_{{ conditionalQuestion.question.id }}[]" 
+                                                                value="{{ conditionalProposition.id }}"
+                                                                class="proposition-input h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                                        {% endif %}
+                                                        <label for="prop_{{ conditionalProposition.id }}" 
+                                                            class="ml-4 text-lg text-gray-600">
+                                                            {{ conditionalProposition.libelle }}
+                                                        </label>
+                                                    </div>
+                                                    
+                                                    {# CORRECTION IMPORTANTE: Ajouter la partie pour les sous-questions conditionnelles #}
+                                                    {% for subConditionalQuestion in questions %}
+                                                        {% if subConditionalQuestion.question.questionCondition 
+                                                            and subConditionalQuestion.question.questionCondition.id == conditionalProposition.id %}
+                                                            <div class="mt-4 ml-8 p-4 bg-gray-100 rounded-lg border border-gray-200 transition-all duration-300 ease-in-out hidden opacity-0"
+                                                                data-conditional="true"
+                                                                data-proposition-trigger="{{ conditionalProposition.id }}">
+                                                                <h5 class="text-md font-semibold text-gray-800 mb-3">
+                                                                    {{ subConditionalQuestion.question.NomQuestion }}
+                                                                </h5>
+                                                                
+                                                                {% if subConditionalQuestion.question.type.id == 2 %}
+                                                                    {# Champ de saisie pour sous-question conditionnelle #}
+                                                                    <div class="w-full">
+                                                                        <input 
+                                                                            type="text" 
+                                                                            id="question_{{ subConditionalQuestion.question.id }}"
+                                                                            name="question_{{ subConditionalQuestion.question.id }}"
+                                                                            class="block w-full max-w-sm px-4 py-2 rounded-lg border-2 border-purple-500 shadow-sm 
+                                                                                focus:ring-2 focus:ring-purple-500 focus:border-purple-500
+                                                                                placeholder-gray-400 transition-colors
+                                                                                text-lg bg-white"
+                                                                            placeholder="Saisissez votre réponse ici..."
+                                                                        >
+                                                                    </div>
+                                                                {% else %}
+                                                                    <div class="space-y-3">
+                                                                        {% for subProposition in subConditionalQuestion.propositions %}
+                                                                            <div class="flex items-center p-2 hover:bg-white rounded-md transition-colors">
+                                                                                {% if subConditionalQuestion.question.type.id == 1 %}
+                                                                                    <input type="radio" 
+                                                                                        id="prop_{{ subProposition.id }}" 
+                                                                                        name="question_{{ subConditionalQuestion.question.id }}" 
+                                                                                        value="{{ subProposition.id }}"
+                                                                                        class="proposition-input h-5 w-5 text-purple-600 border-gray-300 focus:ring-purple-500">
+                                                                                {% elseif subConditionalQuestion.question.type.id == 3 %}
+                                                                                    <input type="checkbox" 
+                                                                                        id="prop_{{ subProposition.id }}" 
+                                                                                        name="question_{{ subConditionalQuestion.question.id }}[]" 
+                                                                                        value="{{ subProposition.id }}"
+                                                                                        class="proposition-input h-5 w-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                                                                                {% endif %}
+                                                                                <label for="prop_{{ subProposition.id }}" 
+                                                                                    class="ml-3 text-md text-gray-600">
+                                                                                    {{ subProposition.libelle }}
+                                                                                </label>
+                                                                            </div>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    {# FIN DE LA CORRECTION #}
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endfor %}
+
+                   
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -3,3 +3,25 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+
+
+home:
+    path: /
+    controller: App\Controller\HomeController::index
+
+
+projet_index:
+    path: /projet
+    controller: App\Controller\ProjetController::index
+    methods: ['GET']
+
+
+
+
+
+
+
+
+
+    

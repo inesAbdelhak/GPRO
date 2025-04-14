@@ -1,0 +1,686 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
+
+{% block body %}
+
+
+
+
+
+<div class="container mx-auto px-4 py-8">
+    {# Dashboard Stats Cards #}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-gray-500 text-sm font-medium">Total Projets</h3>
+            <p class="text-3xl font-bold text-gray-700">{{ projets|length }}</p>
+            <span class="text-green-500 text-sm">Projets enregistrés</span>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-gray-500 text-sm font-medium">Projets Actifs</h3>
+            <p class="text-3xl font-bold text-blue-600">15</p>
+            <span class="text-blue-500 text-sm">En cours</span>
+        </div>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-gray-500 text-sm font-medium">Projets Terminés</h3>
+            <p class="text-3xl font-bold text-purple-600">5</p>
+            <span class="text-gray-500 text-sm">Cette année</span>
+        </div>
+    </div>
+
+    {# Section principale avec tableau et activités récentes #}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {# Colonne principale avec le tableau (prend 2/3 de l'espace) #}
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h1 class="text-xl font-bold text-gray-800">Liste des Projets</h1>
+                    <button 
+                        id="openProjetModal" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Nouveau Projet
+                    </button>
+                </div>
+
+                {# Barre de recherche #}
+                <div class="mb-6">
+                    <div class="flex gap-4">
+                         <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <input type="text" id="search-projects" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5" placeholder="Rechercher un projet...">
+                        </div>
+
+                        {# Bouton filtre #}
+                        <button 
+                            id="filterButton"
+                            class="inline-flex items-center px-4 py-2.5 border border-gray-300 rounded-lg bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                            </svg>
+                            Filtres
+                        </button>
+                    </div>
+                </div>
+
+                {# Table des projets #}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N° projet</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acronyme</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Titre</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for projet in projets %}
+                                <tr 
+                                    data-id="{{ projet.id }}"
+                                    class="projet-row hover:bg-blue-50 cursor-pointer transition-colors duration-150"
+                                >
+                                    <td class="px-6 py-4 whitespace-nowrap">{{ projet.id }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">{{ projet.acronyme }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">{{ projet.titre }}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-right">
+            <button 
+                class="edit-projet text-blue-600 hover:text-blue-900 mr-3"
+                data-id="{{ projet.id }}"
+                title="Modifier ce projet"
+            >
+                <i class="fas fa-edit"></i>
+            </button>
+            {% if is_granted('ROLE_ADMIN') %}
+                            <button 
+                                class="delete-projet text-red-600 hover:text-red-900"
+                                data-id="{{ projet.id }}"
+                            >
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                            Aucun projet trouvé
+                        </td>
+                    </tr>
+                {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {# Colonne d'activités récentes (prend 1/3 de l'espace) #}
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-lg p-6 h-full">
+                <h2 class="text-lg font-semibold mb-4">Activités Récentes</h2>
+                
+                <div class="space-y-4">
+                    {# Notifications/Activités #}
+                    <div class="border-l-4 border-blue-500 pl-4 py-2">
+                        <p class="text-sm text-gray-600">Il y a 2 heures</p>
+                        <p class="text-gray-800">Nouveau projet créé : "Projet XYZ"</p>
+                    </div>
+
+                    <div class="border-l-4 border-green-500 pl-4 py-2">
+                        <p class="text-sm text-gray-600">Il y a 3 heures</p>
+                        <p class="text-gray-800">Mise à jour du projet "ABC"</p>
+                    </div>
+
+                    <div class="border-l-4 border-purple-500 pl-4 py-2">
+                        <p class="text-sm text-gray-600">Il y a 1 jour</p>
+                        <p class="text-gray-800">3 nouveaux intervenants ajoutés</p>
+                    </div>
+                </div>
+
+                {# Statistiques rapides #}
+                <div class="mt-8">
+                    <h3 class="text-md font-medium mb-3">Aperçu rapide</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Projets cette semaine</span>
+                            <span class="text-blue-600 font-semibold">+5</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Tâches en attente</span>
+                            <span class="text-orange-600 font-semibold">12</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">Réunions prévues</span>
+                            <span class="text-green-600 font-semibold">3</span>
+                        </div>
+                    </div>
+                </div>
+
+                {# Prochains événements #}
+                <div class="mt-8">
+                    <h3 class="text-md font-medium mb-3">Prochains événements</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 mt-2 rounded-full bg-red-500"></div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">Réunion de projet</p>
+                                <p class="text-xs text-gray-500">Demain, 14:00</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 mt-2 rounded-full bg-blue-500"></div>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">Review hebdomadaire</p>
+                                <p class="text-xs text-gray-500">Vendredi, 10:00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Modal #}
+<div id="projetModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Nouveau projet</h3>
+            <button id="closeProjetModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form id="newProjetForm" class="space-y-4">
+            <div>
+                <label for="acronyme" class="block text-sm font-medium text-gray-700">Acronyme</label>
+                <input type="text" id="acronyme" name="acronyme" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <label for="titre" class="block text-sm font-medium text-gray-700">Titre</label>
+                <input type="text" id="titre" name="titre" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" id="cancelProjet" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Annuler
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600">
+                    Créer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Modal des filtres  #}
+<div id="filterModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Filtres</h3>
+            <button id="closeFilterModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form id="filterForm" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Veuillez selectionner </label>
+                <select name="filter_type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md">
+                    <option value="">Tous les projets</option>
+                    <option value="annee_promotion">Année promotion</option>
+                    <option value="investigateur">Investigateur coordonnateur</option>
+                    <option value="acronyme">Acronyme étude</option>
+                    <option value="statut">Statut</option>
+                    <option value="methodologiste">Méthodologiste</option>
+                    <option value="chef_projet">Chef de projet</option>
+                </select>
+            </div>
+
+           <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="reset" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Réinitialiser
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600">
+                    Appliquer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Modal edit #}
+<div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
+        <div class="mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Modifier le projet</h3>
+            <button id="closeEditModal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form id="editProjetForm" class="space-y-4">
+            <input type="hidden" id="edit_projet_id" name="id">
+            <div>
+                <label for="edit_acronyme" class="block text-sm font-medium text-gray-700">Acronyme</label>
+                <input type="text" id="edit_acronyme" name="acronyme" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <label for="edit_titre" class="block text-sm font-medium text-gray-700">Titre</label>
+                <input type="text" id="edit_titre" name="titre" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" id="cancelEdit" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Annuler
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <script>
+   document.addEventListener('DOMContentLoaded', function() {
+    // Éléments DOM principaux
+    const modal = document.getElementById('projetModal');
+    const editModal = document.getElementById('editModal');
+    const filterModal = document.getElementById('filterModal');
+    const openModalBtn = document.getElementById('openProjetModal');
+    const closeModalBtn = document.getElementById('closeProjetModal');
+    const closeEditModal = document.getElementById('closeEditModal');
+    const closeFilterModal = document.getElementById('closeFilterModal');
+    const newProjetForm = document.getElementById('newProjetForm');
+    const editProjetForm = document.getElementById('editProjetForm');
+    const filterForm = document.getElementById('filterForm');
+    const searchInput = document.getElementById('search-projects');
+    const tableBody = document.querySelector('tbody');
+    const cancelProjet = document.getElementById('cancelProjet');
+    const cancelEdit = document.getElementById('cancelEdit');
+    const filterButton = document.getElementById('filterButton');
+    
+    let searchTimeout;
+
+    // Initialisation - attacher tous les gestionnaires d'événements
+    initEventListeners();
+    
+    // Fonction pour initialiser tous les gestionnaires d'événements
+    function initEventListeners() {
+        // Gestionnaires pour les modals
+        setupModalHandlers();
+        
+        // Gestionnaires pour les formulaires
+        setupFormHandlers();
+        
+        // Gestionnaire de recherche
+        setupSearchHandler();
+        
+        // Attacher les gestionnaires aux lignes et boutons du tableau
+        attachRowsEventHandlers();
+    }
+    
+    // Configuration des gestionnaires pour les modals
+    function setupModalHandlers() {
+        // Modal Nouveau Projet
+        openModalBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            newProjetForm.reset();
+        });
+        
+        closeModalBtn.addEventListener('click', () => modal.classList.add('hidden'));
+        cancelProjet.addEventListener('click', () => {
+            modal.classList.add('hidden');
+            newProjetForm.reset();
+        });
+        
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.add('hidden');
+        });
+        
+        // Modal Édition
+        closeEditModal.addEventListener('click', () => editModal.classList.add('hidden'));
+        cancelEdit.addEventListener('click', () => editModal.classList.add('hidden'));
+        
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) editModal.classList.add('hidden');
+        });
+        
+        // Modal Filtres
+        filterButton.addEventListener('click', () => filterModal.classList.remove('hidden'));
+        closeFilterModal.addEventListener('click', () => filterModal.classList.add('hidden'));
+        
+        filterModal.addEventListener('click', (e) => {
+            if (e.target === filterModal) filterModal.classList.add('hidden');
+        });
+    }
+    
+    // Configuration des gestionnaires pour les formulaires
+    function setupFormHandlers() {
+        // Formulaire nouveau projet
+        newProjetForm.addEventListener('submit', handleNewProjetSubmit);
+        
+        // Formulaire édition projet
+        editProjetForm.addEventListener('submit', handleEditProjetSubmit);
+        
+        // Formulaire filtres
+        filterForm.addEventListener('submit', handleFilterSubmit);
+        filterForm.addEventListener('reset', () => {
+            setTimeout(reloadProjects, 0);
+        });
+    }
+    
+    // Gestionnaire de soumission pour nouveau projet
+    async function handleNewProjetSubmit(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const acronyme = formData.get('acronyme');
+        const titre = formData.get('titre');
+        
+        // Validation côté client
+        if (!acronyme || !titre) {
+            alert('L\'acronyme et le titre sont requis');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/tableau-de-bord/new', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                modal.classList.add('hidden');
+                reloadProjects();
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Une erreur est survenue lors de la création du projet');
+        }
+    }
+    
+    // Gestionnaire de soumission pour édition projet
+    async function handleEditProjetSubmit(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(editProjetForm);
+        const projetId = formData.get('id');
+        
+        try {
+            const response = await fetch(`/tableau-de-bord/edit/${projetId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.status === 'success') {
+                editModal.classList.add('hidden');
+                reloadProjects();
+            } else {
+                alert(data.message || 'Une erreur est survenue');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Une erreur est survenue lors de la modification du projet');
+        }
+    }
+    
+    // Gestionnaire de soumission pour filtres
+    async function handleFilterSubmit(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(filterForm);
+        
+        try {
+            const response = await fetch('/tableau-de-bord/filter', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Erreur réseau');
+            }
+            
+            const data = await response.json();
+            updateTableContent(data);
+            filterModal.classList.add('hidden');
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors du filtrage');
+        }
+    }
+    
+    // Configuration du gestionnaire de recherche
+    function setupSearchHandler() {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.trim();
+            
+            // Effacer le timeout précédent pour éviter trop de requêtes
+            clearTimeout(searchTimeout);
+            
+            // Définir un nouveau timeout (délai de 300ms)
+            searchTimeout = setTimeout(() => {
+                const url = `/tableau-de-bord/search?q=${encodeURIComponent(searchTerm)}`;
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erreur HTTP: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        updateTableContent(data);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-red-500">
+                                    Erreur lors de la recherche: ${error.message}
+                                </td>
+                            </tr>
+                        `;
+                    });
+            }, 300);
+        });
+    }
+    
+    // Attacher les gestionnaires d'événements aux lignes et boutons du tableau
+    function attachRowsEventHandlers() {
+        // Gestionnaire pour les lignes cliquables
+        const projetRows = document.querySelectorAll('.projet-row');
+        
+        projetRows.forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Ignorer si l'utilisateur a cliqué sur un bouton d'action
+                if (!e.target.closest('button') && !e.target.closest('i')) {
+                    const projetId = this.dataset.id;
+                    window.location.href = `/tableau-de-bord/details/${projetId}`;
+                }
+            });
+        });
+        
+        // Gestionnaires pour les boutons d'édition
+        attachEditButtonHandlers();
+    }
+    
+    // Attacher les gestionnaires aux boutons d'édition et de suppression
+    function attachEditButtonHandlers() {
+        const editButtons = document.querySelectorAll('.edit-projet');
+        
+        editButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Empêcher la propagation vers la ligne parente
+                
+                const projetId = this.dataset.id;
+                
+                fetch(`/tableau-de-bord/edit/${projetId}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('edit_projet_id').value = data.id;
+                    document.getElementById('edit_acronyme').value = data.acronyme;
+                    document.getElementById('edit_titre').value = data.titre;
+                    editModal.classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Erreur lors de la récupération des données du projet');
+                });
+            });
+        });
+        
+        const deleteButtons = document.querySelectorAll('.delete-projet');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // Empêcher la propagation vers la ligne parente
+                
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce projet?')) {
+                    const projetId = this.dataset.id;
+                    fetch(`/tableau-de-bord/delete/${projetId}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            reloadProjects();
+                        } else {
+                            alert(data.message || 'Une erreur est survenue');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Une erreur est survenue lors de la suppression du projet');
+                    });
+                }
+            });
+        });
+    }
+    
+    // Mettre à jour le contenu du tableau
+    function updateTableContent(projects) {
+        // Si aucun projet n'est trouvé ou s'il y a une erreur
+        if (!projects || projects.length === 0 || projects.error) {
+            let message = 'Aucun projet trouvé';
+            if (projects && projects.error) {
+                message = `Erreur: ${projects.error}`;
+            }
+            
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                        ${message}
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Générer les lignes du tableau si des projets sont trouvés
+        const rows = projects.map(project => `
+            <tr 
+                data-id="${project.id}" 
+                class="projet-row hover:bg-blue-50 cursor-pointer transition-colors duration-150"
+            >
+                <td class="px-6 py-4 whitespace-nowrap">${project.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${project.acronyme}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${project.titre}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right">
+                    <button 
+                        class="edit-projet text-blue-600 hover:text-blue-900 mr-3"
+                        data-id="${project.id}"
+                        title="Modifier ce projet"
+                    >
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    ${project.isAdmin ? `
+                        <button 
+                            class="delete-projet text-red-600 hover:text-red-900"
+                            data-id="${project.id}"
+                            title="Supprimer ce projet"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
+                </td>
+            </tr>
+        `).join('');
+        
+        tableBody.innerHTML = rows;
+        
+        // Important: rattacher les gestionnaires d'événements après mise à jour du DOM
+        attachRowsEventHandlers();
+    }
+    
+    // Recharger les projets depuis le serveur
+    function reloadProjects() {
+        fetch('/tableau-de-bord/', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTableContent(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors du rechargement des projets');
+        });
+    }
+});
+
+    </script>
+{% endblock %}

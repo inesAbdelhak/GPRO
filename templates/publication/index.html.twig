@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+
+
+{% block body %}
+<div class="container mx-auto p-4 pt-6 md:p-6 lg:p-12">
+ 
+
+  {% for question in questions %}
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-2">{{ question.nomQuestion }}</h2>
+                <div class="ml-4">
+                    {% for proposition in question.propositions %}
+                        {% if proposition.typeReponse == 'radio' %}
+                            <div class="flex items-center mb-2">
+                                <input type="radio" id="{{ proposition.id }}" name="question_{{ question.id }}" value="{{ proposition.libelle }}" class="mr-2">
+                                <label for="{{ proposition.id }}" class="text-lg">{{ proposition.libelle }}</label>
+                            </div>
+                        {% elseif proposition.typeReponse == 'input' %}
+                            <div class="mb-2">
+                                <label for="{{ proposition.id }}" class="block text-lg">{{ proposition.libelle }}</label>
+                                <input type="text" id="{{ proposition.id }}" name="question_{{ question.id }}" class="border rounded p-2 w-full">
+                            </div>
+                        {% elseif proposition.typeReponse == 'date' %}
+                            <div class="mb-2">
+                                <label for="{{ proposition.id }}" class="block text-lg">{{ proposition.libelle }}</label>
+                                <input type="date" id="{{ proposition.id }}" name="question_{{ question.id }}" class="border rounded p-2 w-full">
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+
+
+
+
+
+
+{% endblock %}

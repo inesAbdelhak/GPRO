@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ asset('./assets/styles/app.css') }}">
+        <script src="https://kit.fontawesome.com/f8394ebfa8.js" crossorigin="anonymous"></script> <!-- Ajoutez cette ligne -->
+
+    {% block stylesheets %}
+    {{ encore_entry_link_tags('app_css') }}
+    {% endblock %}
+</head>
+<body>
+
+        {% block body %}{% endblock %}
+   
+</body>
+</html>

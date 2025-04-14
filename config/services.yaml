@@ -19,6 +19,27 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Controller\DescriptionController:
+        public: true
 
+
+      
+
+    App\EventListener\:
+
+        resource: '../src/EventListener/'
+        tags:
+
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\EventListener\TemplateListener:
+        tags:
+            - { name: kernel.event_subscriber }
+
+    
+    Symfony\Component\HttpFoundation\Session\SessionInterface: '@session'
+    App\EventListener\ConnexionListener:
+        arguments:
+            $session: '@session'
+

@@ -1,0 +1,182 @@
+{% extends 'base.html.twig' %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const hideConditionalQuestions = () => {
+            document.querySelectorAll('[data-conditional="true"]').forEach(question => {
+                question.classList.add('hidden');
+                question.classList.remove('opacity-100');
+                question.classList.add('opacity-0');
+            });
+        };
+
+        const showConditionalQuestion = (propositionId) => {
+            const conditionalQuestion = document.querySelector(
+                `[data-proposition-trigger="${propositionId}"]`
+            );
+            
+            if (conditionalQuestion) {
+                hideConditionalQuestions();
+                conditionalQuestion.classList.remove('hidden');
+                void conditionalQuestion.offsetWidth;
+                conditionalQuestion.classList.remove('opacity-0');
+                conditionalQuestion.classList.add('opacity-100');
+            }
+        };
+
+        hideConditionalQuestions();
+
+        document.querySelectorAll('.proposition-input').forEach(input => {
+            input.addEventListener('change', (event) => {
+                const propositionId = event.target.value;
+                if (event.target.type === 'checkbox' || event.target.type === 'radio') {
+                    if (event.target.checked) {
+                        showConditionalQuestion(propositionId);
+                    } else {
+                        hideConditionalQuestions();
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block body %}
+<div class="w-full" style="min-height: auto;">  
+<div>
+        {% if item %}
+            <div class="border-b border-gray-200 pb-4 mb-6">
+                <h3 class="text-xl font-bold text-gray-900">{{ item.nomItem }}</h3>
+            </div>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_description_save') }}" class="space-y-8">
+            {% if projet is defined and projet %}
+                <input type="hidden" name="projet_id" value="{{ projet.id }}">
+            {% endif %}
+
+            <div class="space-y-8">
+                {% for questionData in questions %}
+                    {% if not questionData.question.questionCondition %}
+                        <div class="bg-gray-50 rounded-lg p-6 shadow-sm">
+                            <div class="mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">
+                                    {{ questionData.question.NomQuestion }}
+                                </h3>
+                            </div>
+
+                            {% if questionData.question.type.id == 2 %}
+                                {# Champ de saisie texte #}
+                                <div class="w-full">
+                                    <input 
+                                        type="text" 
+                                        id="question_{{ questionData.question.id }}"
+                                        name="question_{{ questionData.question.id }}"
+                                        class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 
+                                               focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                                               text-gray-700 text-lg"
+                                        placeholder="Saisissez votre réponse ici..."
+                                    >
+                                </div>
+                            {% else %}
+                                {# Questions à choix (radio/checkbox) #}
+                                <div class="space-y-2">
+                                    {% for proposition in questionData.propositions %}
+                                        <div class="relative">
+                                            <div class="flex items-center p-4 hover:bg-white rounded-lg transition-all duration-200">
+                                                {% if questionData.question.type.id == 1 %}
+                                                    <input type="radio" 
+                                                        id="prop_{{ proposition.id }}" 
+                                                        name="question_{{ questionData.question.id }}" 
+                                                        value="{{ proposition.id }}"
+                                                        class="proposition-input h-5 w-5 text-blue-600 border-gray-300">
+                                                {% elseif questionData.question.type.id == 3 %}
+                                                    <input type="checkbox" 
+                                                        id="prop_{{ proposition.id }}" 
+                                                        name="question_{{ questionData.question.id }}[]" 
+                                                        value="{{ proposition.id }}"
+                                                        class="proposition-input h-5 w-5 text-blue-600 border-gray-300 rounded">
+                                                {% endif %}
+                                                <label for="prop_{{ proposition.id }}" 
+                                                    class="ml-3 text-base text-gray-700 cursor-pointer flex-grow">
+                                                    {{ proposition.libelle }}
+                                                </label>
+                                            </div>
+
+                                            {% for conditionalQuestion in questions %}
+                                                {% if conditionalQuestion.question.questionCondition 
+                                                    and conditionalQuestion.question.questionCondition.id == proposition.id %}
+                                                    <div class="ml-8 mt-2 p-3 bg-white rounded-lg border border-gray-200 
+                                                            transition-all duration-300 ease-in-out hidden opacity-0"
+                                                         data-conditional="true"
+                                                         data-proposition-trigger="{{ proposition.id }}">
+                                                        <h4 class="text-base font-semibold text-gray-800 mb-4">
+                                                            {{ conditionalQuestion.question.NomQuestion }}
+                                                        </h4>
+
+                                                        {% if conditionalQuestion.question.type.id == 2 %}
+                                                            <div class="w-full">
+                                                                <input 
+                                                                    type="text" 
+                                                                    id="question_{{ conditionalQuestion.question.id }}"
+                                                                    name="question_{{ conditionalQuestion.question.id }}"
+                                                                    class="w-full px-4 py-2 rounded-lg border-2 border-gray-300 
+                                                                           focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                                                                           text-gray-700 text-base"
+                                                                    placeholder="Saisissez votre réponse ici..."
+                                                                >
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="space-y-2">
+                                                                {% for conditionalProposition in conditionalQuestion.propositions %}
+                                                                    <div class="flex items-center p-2 hover:bg-white rounded-md transition-colors">
+                                                                        {% if conditionalQuestion.question.type.id == 1 %}
+                                                                            <input type="radio" 
+                                                                                id="prop_{{ conditionalProposition.id }}"
+                                                                                name="question_{{ conditionalQuestion.question.id }}"
+                                                                                value="{{ conditionalProposition.id }}"
+                                                                                class="proposition-input h-4 w-4 text-blue-600 border-gray-300">
+                                                                        {% elseif conditionalQuestion.question.type.id == 3 %}
+                                                                            <input type="checkbox" 
+                                                                                id="prop_{{ conditionalProposition.id }}"
+                                                                                name="question_{{ conditionalQuestion.question.id }}[]"
+                                                                                value="{{ conditionalProposition.id }}"
+                                                                                class="proposition-input h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                                                        {% endif %}
+                                                                        <label for="prop_{{ conditionalProposition.id }}" 
+                                                                            class="ml-3 text-base text-gray-600">
+                                                                            {{ conditionalProposition.libelle }}
+                                                                        </label>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-gray-500 italic">Aucune question disponible pour cet item.</p>
+                {% endfor %}
+            </div>
+
+            <div class="flex justify-center pt-6">
+                <button type="submit" 
+                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                           transition-colors duration-200">
+                    Enregistrer 
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

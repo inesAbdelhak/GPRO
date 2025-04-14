@@ -1,0 +1,85 @@
+<div class="w-full space-y-6"> {# Conteneur principal avec espacement vertical #}
+        {# Section des statistiques #}
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {# Carte Ventes #}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Projet Totales</p>
+                        <p class="text-2xl font-bold">3 projets</p>
+                        
+                    </div>
+
+                    <div class="bg-blue-100 p-3 rounded-full">
+                        <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                    </div>
+
+                </div>
+            </div>
+
+            {# Carte Clients #}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Projet en cours..</p>
+                        <p class="text-2xl font-bold">3 projets en cours</p>
+                       
+                    </div>
+                  
+                </div>
+            </div>
+
+            {# Carte Commandes #}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Projet terminé </p>
+                        <p class="text-2xl font-bold">0</p>
+                
+                    </div>
+                   
+                </div>
+            </div>
+
+            
+        </div>
+
+        {# Section Graphiques et Activités #}
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {# Graphique des Ventes #}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-lg font-semibold mb-4">Évolution des projets</h2>
+                <div class="h-80">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            {# Activités Récentes #}
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-lg font-semibold mb-4">Activités Récentes</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div>
+                            <p class="text-sm font-medium">Nouveau projet crée </p>
+                            <p class="text-xs text-gray-500">Il y a 1 mois </p>
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-medium">Nouveau projet crée </p>
+                            <p class="text-xs text-gray-500">Il y a 1 mois </p>
+                        </div>
+
+
+                        <div>
+                            <p class="text-sm font-medium">Nouveau projet crée </p>
+                            <p class="text-xs text-gray-500">Il y a 1 mois </p>
+                        </div>
+                        
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>

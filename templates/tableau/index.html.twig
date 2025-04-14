@@ -1,0 +1,33 @@
+{# templates/dashboard/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block body %}
+        {% include 'tableau/dashboard-content.html.twig' %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'mensuelles',
+                        data: [4000, 3000, 5000, 4500, 6000, 5500],
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

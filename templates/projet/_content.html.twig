@@ -1,0 +1,35 @@
+
+
+
+
+{% for projet in projets %}
+    <tr>
+        <td class="px-6 py-4 whitespace-nowrap">{{ projet.id }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">{{ projet.acronyme }}</td>
+        <td class="px-6 py-4 whitespace-nowrap">{{ projet.titre }}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-right">
+            <button 
+                class="edit-projet text-blue-600 hover:text-blue-900 mr-3" 
+                data-id="{{ projet.id }}"
+                title="Modifier ce projet"
+            >
+                <i class="fas fa-edit"></i>
+            </button>
+            {% if is_granted('ROLE_ADMIN') %}
+                <button 
+                    class="delete-projet text-red-600 hover:text-red-900" 
+                    data-id="{{ projet.id }}"
+                    title="Supprimer ce projet"
+                >
+                    <i class="fas fa-trash"></i>
+                </button>
+            {% endif %}
+        </td>
+    </tr>
+{% else %}
+    <tr>
+        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+            Aucun projet trouvé
+        </td>
+    </tr>
+{% endfor %}

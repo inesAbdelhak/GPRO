@@ -1,3 +1,107 @@
-body {
-    background-color: skyblue;
+
+
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+
+
+
+
+.ps-sidebar-root {
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
+
+.ps-submenu-content {
+  background-color: #001529 !important;
+}
+
+.ps-menu-button:hover {
+  background-color: #1677ff !important;
+}
+
+.ps-sidebar-container {
+  height: 100vh !important;
+}
+
+
+
+
+
+/* Sidebar transitions */
+.sidebar-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+#react-dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+/* Ensure main content pushes right when sidebar is open */
+@media (min-width: 768px) {
+  main {
+      margin-left: 16rem;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.bg-custom-color {
+    background-color: #0077C2;
+  }
+
+  .bg-custom{
+    background-color: #FAFAFA;
+  }
+  
+  .bg-custom-hover:hover {
+    background-color: rgb(27, 63, 104);
+  }
+  
+  
+  .bg-custom-alert {
+   background-color: 	rgb(192, 92, 92);
+  }
+
+  .bg-cutom-header{
+    background-color: rgb(27, 63, 104);
+  }
+
+  .bg-custom-icon{
+    background-color: #56a6e9;
+  }
+  main {
+    font-size: 1rem; /* Taille fixe pour le contenu */
+}
+
+
+  .hidden {
+    display: none;
+    transition: max-height 0.3s ease-in-out;
+  }
+  
+  .sous-proposition {
+    max-height: 0;
+    overflow: hidden;
+  }
+  
+  .sous-proposition.show {
+    max-height: 500px; /* Ajuste la hauteur en fonction de ton contenu */
+  }
+  #react-dashboard {
+    display: flex;
+    height: 100vh;
+  }

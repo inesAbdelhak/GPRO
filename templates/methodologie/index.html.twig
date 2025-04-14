@@ -1,0 +1,170 @@
+
+
+
+
+{% extends 'base.html.twig' %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const hideConditionalQuestions = () => {
+                document.querySelectorAll('[data-conditional="true"]').forEach(question => {
+                    question.classList.add('hidden');
+                    question.classList.remove('opacity-100');
+                    question.classList.add('opacity-0');
+                });
+            };
+
+            const showConditionalQuestion = (propositionId) => {
+                const conditionalQuestion = document.querySelector(
+                    `[data-proposition-trigger="${propositionId}"]`
+                );
+                
+                if (conditionalQuestion) {
+                    hideConditionalQuestions();
+                    conditionalQuestion.classList.remove('hidden');
+                    void conditionalQuestion.offsetWidth;
+                    conditionalQuestion.classList.remove('opacity-0');
+                    conditionalQuestion.classList.add('opacity-100');
+                }
+            };
+
+            hideConditionalQuestions();
+
+            document.querySelectorAll('.proposition-input').forEach(input => {
+                input.addEventListener('change', (event) => {
+                    const propositionId = event.target.value;
+                    if (event.target.type === 'checkbox' || event.target.type === 'radio') {
+                        if (event.target.checked) {
+                            showConditionalQuestion(propositionId);
+                        } else {
+                            hideConditionalQuestions();
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="min-h-screen bg-gray-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <form method="post" class="space-y-8 bg-white rounded-lg shadow-sm">
+                <div class="p-6 space-y-8">
+                    {% for questionData in questions %}
+                        {% if not questionData.question.questionCondition %}
+                            <div class="mb-8 last:mb-0">
+                                <div class="border-b border-gray-200 pb-4 mb-6">
+                                    <h3 class="text-2xl font-semibold text-gray-900">
+                                        {{ questionData.question.NomQuestion }}
+                                    </h3>
+                                </div>
+                                
+                                {% if questionData.question.type.id == 2 %}
+                                    {# Champ de saisie texte #}
+                                    <div class="w-full space-y-2">
+                                        <div class="relative">
+                                            <input 
+                                                type="text" 
+                                                id="question_{{ questionData.question.id }}"
+                                                name="question_{{ questionData.question.id }}"
+                                                class="block w-full max-w-xs px-4 py-2 rounded-lg border-2 border-red-500 shadow-sm 
+                                                       focus:ring-2 focus:ring-red-500 focus:border-red-500
+                                                       placeholder-gray-400 transition-colors
+                                                       text-lg bg-white"
+                                                placeholder="Saisissez votre réponse ici..."
+                                            >
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    {# Questions à choix (radio/checkbox) #}
+                                    <div class="grid gap-4 lg:gap-6">
+                                        {% for proposition in questionData.propositions %}
+                                            <div class="relative">
+                                                <div class="flex items-start group hover:bg-gray-50 p-4 rounded-lg transition-colors">
+                                                    <div class="flex items-center h-6">
+                                                        {% if questionData.question.type.id == 1 %}
+                                                            <input type="radio" 
+                                                                id="prop_{{ proposition.id }}" 
+                                                                name="question_{{ questionData.question.id }}" 
+                                                                value="{{ proposition.id }}"
+                                                                class="proposition-input h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                                        {% elseif questionData.question.type.id == 3 %}
+                                                            <input type="checkbox" 
+                                                                id="prop_{{ proposition.id }}" 
+                                                                name="question_{{ questionData.question.id }}[]" 
+                                                                value="{{ proposition.id }}"
+                                                                class="proposition-input h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                                        {% endif %}
+                                                    </div>
+                                                    <label for="prop_{{ proposition.id }}" 
+                                                        class="ml-4 text-lg text-gray-700 cursor-pointer flex-grow">
+                                                        {{ proposition.libelle }}
+                                                    </label>
+                                                </div>
+
+                                                {% for conditionalQuestion in questions %}
+                                                    {% if conditionalQuestion.question.questionCondition 
+                                                        and conditionalQuestion.question.questionCondition.id == proposition.id %}
+                                                        <div class="mt-6 ml-8 p-6 bg-gray-50 rounded-lg border border-gray-200 transition-all duration-300 ease-in-out hidden opacity-0"
+                                                             data-conditional="true"
+                                                             data-proposition-trigger="{{ proposition.id }}">
+                                                            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+                                                                {{ conditionalQuestion.question.NomQuestion }}
+                                                            </h4>
+                                                            {% if conditionalQuestion.question.type.id == 2 %}
+                                                                {# Champ de saisie pour question conditionnelle #}
+                                                                <div class="w-full">
+                                                                    <input 
+                                                                        type="text" 
+                                                                        id="question_{{ conditionalQuestion.question.id }}"
+                                                                        name="question_{{ conditionalQuestion.question.id }}"
+                                                                        class="block w-full max-w-sm px-4 py-2 rounded-lg border-2 border-red-500 shadow-sm 
+                                                                               focus:ring-2 focus:ring-red-500 focus:border-red-500
+                                                                               placeholder-gray-400 transition-colors
+                                                                               text-lg bg-white"
+                                                                        placeholder="Saisissez votre réponse ici..."
+                                                                    >
+                                                                </div>
+                                                            {% else %}
+                                                                <div class="space-y-4">
+                                                                    {% for conditionalProposition in conditionalQuestion.propositions %}
+                                                                        <div class="flex items-center p-3 hover:bg-white rounded-md transition-colors">
+                                                                            {% if conditionalQuestion.question.type.id == 1 %}
+                                                                                <input type="radio" 
+                                                                                    id="prop_{{ conditionalProposition.id }}" 
+                                                                                    name="question_{{ conditionalQuestion.question.id }}" 
+                                                                                    value="{{ conditionalProposition.id }}"
+                                                                                    class="proposition-input h-5 w-5 text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                                                                            {% elseif conditionalQuestion.question.type.id == 3 %}
+                                                                                <input type="checkbox" 
+                                                                                    id="prop_{{ conditionalProposition.id }}" 
+                                                                                    name="question_{{ conditionalQuestion.question.id }}[]" 
+                                                                                    value="{{ conditionalProposition.id }}"
+                                                                                    class="proposition-input h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                                                            {% endif %}
+                                                                            <label for="prop_{{ conditionalProposition.id }}" 
+                                                                                class="ml-4 text-lg text-gray-600">
+                                                                                {{ conditionalProposition.libelle }}
+                                                                            </label>
+                                                                        </div>
+                                                                    {% endfor %}
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
